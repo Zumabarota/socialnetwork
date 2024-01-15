@@ -1,0 +1,419 @@
+openapi: 3.0.3
+info:
+  title: Dwitter API
+  version: 0.0.1
+  description: Your project description
+paths:
+  /dweet/:
+    get:
+      operationId: dweet_list
+      description: Returns a list of all dweets.
+      tags:
+      - dweet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dweet'
+          description: ''
+    post:
+      operationId: dweet_create
+      description: Creates a new dweet for the current user.
+      tags:
+      - dweet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dweet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dweet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dweet'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dweet'
+          description: ''
+        '400':
+          description: body:[This field may not be null.]
+        '403':
+          description: Authentication credentials were not provided.
+  /dweet/{id}/:
+    get:
+      operationId: dweet_retrieve
+      description: Returns the dweet corresponding to the specified id.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dweet.
+        required: true
+      tags:
+      - dweet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dweet'
+          description: ''
+        '404':
+          description: The dweet does not exist.
+    put:
+      operationId: dweet_update
+      description: |-
+        Updates the body of the dweet corresponding to the id specified in the path,
+        if the requesting user is the dweet's creator.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dweet.
+        required: true
+      tags:
+      - dweet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dweet'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Dweet'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Dweet'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dweet'
+          description: ''
+        '400':
+          description: body:[This field may not be null.]
+        '401':
+          description: Unauthorized.
+        '404':
+          description: The dweet does not exist.
+    delete:
+      operationId: dweet_destroy
+      description: |-
+        Deletes the dweet corresponding to the id specified in the path,
+        if the requesting user is the dweet's creator.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this dweet.
+        required: true
+      tags:
+      - dweet
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: No response body
+        '401':
+          description: Unauthorized.
+        '404':
+          description: The dweet does not exist.
+  /register/:
+    post:
+      operationId: register_create
+      description: Allows for the creation of new users.
+      tags:
+      - register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+        '400':
+          description: Various problems with the request.
+  /user/:
+    get:
+      operationId: user_list
+      description: Returns a list of all users.
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Profile'
+          description: ''
+  /user/{id}/:
+    get:
+      operationId: user_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this profile.
+        required: true
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '404':
+          description: The user does not exist.
+  /user/{id}/dweets/:
+    get:
+      operationId: user_dweets_retrieve
+      description: Returns a list of all dweets created by the user specified in the
+        path.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this profile.
+        required: true
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '404':
+          description: The user does not exist.
+  /user/{id}/followers/:
+    get:
+      operationId: user_followers_retrieve
+      description: Returns a list of users the specified user ID is followed by.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this profile.
+        required: true
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '404':
+          description: The user does not exist.
+  /user/{id}/following/:
+    get:
+      operationId: user_following_retrieve
+      description: Returns a list of users the specified user ID is following.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this profile.
+        required: true
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '404':
+          description: The user does not exist.
+    post:
+      operationId: user_following_create
+      description: Allows the requesting user to follow the user specified in the
+        path.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this profile.
+        required: true
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: 'following: True'
+        '404':
+          description: The user does not exist.
+    delete:
+      operationId: user_following_destroy
+      description: Allows the requesting user to unfollow the user specified in the
+        path.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this profile.
+        required: true
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: 'following: False'
+        '404':
+          description: The user does not exist.
+  /user/all_followed/:
+    get:
+      operationId: user_all_followed_retrieve
+      description: Returns a list of all dweets from users followed by the current
+        user.
+      tags:
+      - user
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+          description: ''
+        '401':
+          description: Unauthorized.
+components:
+  schemas:
+    Dweet:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        body:
+          type: string
+          maxLength: 140
+      required:
+      - body
+      - id
+      - user
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+        follows:
+          type: array
+          items:
+            type: integer
+      required:
+      - id
+      - username
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+        password1:
+          type: string
+        password2:
+          type: string
+        email:
+          type: string
+      required:
+        - username
+        - password1
+        - password2
+        - email
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
