@@ -173,6 +173,44 @@ paths:
           description: No response body
         '400':
           description: Various problems with the request.
+  /accounts/login/:
+    post:
+      operationId: login
+      description: Submits a login request using the specified username & password.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /accounts/logout/:
+    get:
+      operationId: logout
+      description: The current user is logged out.
+      tags:
+      - accounts
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
   /user/:
     get:
       operationId: user_list
@@ -393,6 +431,16 @@ components:
       required:
       - id
       - username
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+      - username
+      - password
     Register:
       type: object
       properties:
