@@ -6,9 +6,10 @@ This project serves as an example API for a basic Twitter clone.  API documentat
 
 # Features
 
-* Creation and display of users and dweets, with the ability to follow and unfollow other users.
+* Creation and display of users, dweets and comments, with the ability to follow and unfollow other users.
 * Users: get all, get a single user, create a new user, login or logout, get all users that follow or are followed by the current user, follow or unfollow a single user, get a single user's dweets, get all dweets from followed users.
 * Dweets: get all, get a single dweet, create a new dweet, edit or delete dweets created by the current user.
+* Comments: get all comments for a dweet, create a new comment, edit or delete comments created by the current user.
 
 # Usage
 
