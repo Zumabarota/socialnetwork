@@ -2,9 +2,9 @@ from rest_framework import viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from .models import Dweet, Profile
+from .models import Comment, Dweet, Profile
 from .permissions import IsOwnerOrReadOnly
-from .serializers import DweetSerializer, ProfileSerializer, RegisterSerializer
+from .serializers import CommentSerializer, DweetSerializer, ProfileSerializer, RegisterSerializer
 
 
 @api_view(['POST'])
@@ -43,7 +43,7 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     def all_followed(self, request, *args, **kwargs):
         """Returns a list of all dweets from users followed by the current user."""
         if request.user.is_authenticated is False:
-            return Response({"Error": "Unauthorized"}, status=401)
+            return Response({"detail": "Authentication credentials were not provided."}, status=403)
         dweets = Dweet.objects.filter(user__profile__in=request.user.profile.follows.all()).order_by('-created_at')
         serializer = DweetSerializer(dweets, many=True)
         return Response({"data": serializer.data, "results": len(serializer.data)}, status=200)
@@ -73,6 +73,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     @following.mapping.post
     def post_following(self, request, pk=None):
         """Allows the requesting user to follow the user specified in the path."""
+        if request.user.is_authenticated is False:
+            return Response({"detail": "Authentication credentials were not provided."}, status=403)
         try:
             profile_to_follow = Profile.objects.get(id=pk)
             current_user_profile = request.user.profile
@@ -85,6 +87,8 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     @following.mapping.delete
     def delete_following(self, request, pk=None):
         """Allows the requesting user to unfollow the user specified in the path."""
+        if request.user.is_authenticated is False:
+            return Response({"detail": "Authentication credentials were not provided."}, status=403)
         try:
             profile_to_follow = Profile.objects.get(id=pk)
             current_user_profile = request.user.profile
@@ -122,7 +126,7 @@ class DweetViewSet(viewsets.ModelViewSet):
                 dweet.save()
                 return Response({"Success": "The post was successfully updated"}, status=200)
             else:
-                return Response({"Error": "Unauthorized"}, status=401)
+                return Response({"Error": "Unauthorized, you are not the owner."}, status=401)
         except Dweet.DoesNotExist:
             return Response({"Error": "The dweet does not exist"}, status=404)
 
@@ -135,6 +139,71 @@ class DweetViewSet(viewsets.ModelViewSet):
                 dweet.delete()
                 return Response(status=204)
             else:
-                return Response({"Error": "Unauthorized"}, status=401)
+                return Response({"Error": "Unauthorized, you are not the owner."}, status=401)
         except Dweet.DoesNotExist:
             return Response({"Error": "The dweet does not exist"}, status=404)
+
+    @action(detail=True)
+    def comments(self, request, pk=None):
+        """Returns a list of comments for the specified dweet."""
+        try:
+            dweet = Dweet.objects.get(id=pk)
+            comments = Comment.objects.filter(dweet=pk)
+            serializer = CommentSerializer(comments, many=True)
+            return Response({"data": serializer.data, "results": len(serializer.data)}, status=200)
+        except Dweet.DoesNotExist:
+            return Response({"Error": "The dweet does not exist"}, status=404)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    http_method_names = ['post', 'put', 'delete']
+
+    def create(self, request, *args, **kwargs):
+        """Creates a new comment on the specified dweet, for the current user."""
+        try:
+            dweet = request.data.get('dweet_id')
+            dweet_to_comment = Dweet.objects.get(id=dweet)
+            serializer = CommentSerializer(data={
+                'user': request.user.id,
+                'body': request.data.get('body'),
+                'dweet': dweet
+            })
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=201)
+            return Response(serializer.errors, status=400)
+        except Dweet.DoesNotExist:
+            return Response({"Error": "The dweet does not exist"}, status=404)
+
+    def update(self, request, pk=None):
+        """Updates the body of the comment corresponding to the id specified in the path,
+        if the requesting user is the comment's creator."""
+        try:
+            comment = Comment.objects.get(id=pk)
+            body = request.data.get('body')
+            if comment.user == request.user:
+                comment.body = body
+                if comment.body is None:
+                    return Response({"Error": "body: [This field may not be null.]"}, status=400)
+                comment.save()
+                return Response({"Success": "The commentt was successfully updated"}, status=200)
+            else:
+                return Response({"Error": "Unauthorized, you are not the owner."}, status=401)
+        except Comment.DoesNotExist:
+            return Response({"Error": "The comment does not exist"}, status=404)
+
+    def destroy(self, request, pk=None):
+        """Deletes the comment corresponding to the id specified in the path,
+        if the requesting user is the comment's creator."""
+        try:
+            comment = Comment.objects.get(id=pk)
+            if comment.user == request.user:
+                comment.delete()
+                return Response(status=204)
+            else:
+                return Response({"Error": "Unauthorized, you are not the owner."}, status=401)
+        except Comment.DoesNotExist:
+            return Response({"Error": "The comment does not exist"}, status=404)

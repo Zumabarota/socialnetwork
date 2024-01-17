@@ -2,13 +2,19 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from .models import Dweet, Profile
+from .models import Comment, Dweet, Profile
 
 
 class DweetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Dweet
         fields = ['id', 'user', 'body']
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'user', 'dweet', 'body']
 
 
 class ProfileSerializer(serializers.ModelSerializer):

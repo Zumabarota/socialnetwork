@@ -10,6 +10,7 @@ app_name = "dwitter"
 router = DefaultRouter()
 router.register(r'user', views.UserViewSet, basename='user')
 router.register(r'dweet', views.DweetViewSet, basename='dweet')
+router.register(r'comment', views.CommentViewSet, basename='comment')
 
 urlpatterns = format_suffix_patterns([
     path("accounts/", include('django.contrib.auth.urls')),
